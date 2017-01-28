@@ -11,16 +11,14 @@ import miqueias.com.br.testemavenserver.engine.strategy.AbstractWebSocketsStrate
 
 public class LiveRHandler extends AbstractMessageHandler {
 
-    private final ConexoesSingleton singleton = ConexoesSingleton.getInstance();
-
     @Override
     public boolean accept(Session session, String message) {
-        return singleton.getLivers().contains(session);
+        return ConexoesSingleton.getInstance().getLivers().contains(session);
     }
 
     @Override
     public void handle(Session session, String message, AbstractWebSocketsStrategy strategy) {
-        singleton.getProtocol().getjRIconnector().addMessageInput(message);
+        ConexoesSingleton.getInstance().getjRIconnector().addMessageInput(message);
     }
 
 }

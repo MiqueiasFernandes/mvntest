@@ -14,16 +14,16 @@ import org.rosuda.JRI.Rengine;
  */
 public class TextConsole implements RMainLoopCallbacks {
 
-    private final StringBuffer buffer;
-    private IJRISends jRISends;
+    private static StringBuffer buffer;
+    private static IJRISends jRISends;
 
     public TextConsole(IJRISends jRISends) {
-        this.jRISends = jRISends;
-        this.buffer = new StringBuffer();
+        TextConsole.jRISends = jRISends;
+        TextConsole.buffer = new StringBuffer();
     }
 
     public void addMessageReceived(String text) {
-        buffer.append(text);
+        TextConsole.buffer.append(text);
     }
 
     @Override
@@ -33,25 +33,26 @@ public class TextConsole implements RMainLoopCallbacks {
 
     @Override
     public void rBusy(Rengine re, int which) {
-        jRISends.sendAlert("rBusy(" + which + ")" + "\n");
+        TextConsole.jRISends.sendAlert("rBusy(" + which + ")" + "\n");
     }
 
     @Override
     public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-        jRISends.sendPrompt(prompt);
+        TextConsole.jRISends.sendPrompt(prompt);
         String s = getLine(re);
+        printLine(s);
         return s;
     }
 
     @Override
     public void rShowMessage(Rengine re, String message) {
-        jRISends.sendAlert(message);
+        TextConsole.jRISends.sendAlert(message);
     }
 
     @Override
     public String rChooseFile(Rengine re, int newFile) {
         try {
-            return jRISends.getMessageAlert((newFile == 0) ? "Select a file" : "Select a new file" + "\n");
+            return TextConsole.jRISends.getMessageAlert((newFile == 0) ? "Select a file" : "Select a new file" + "\n");
         } catch (Exception ex) {
             System.err.println("não foi possivel esperar por thread...\nDetalhes: " + ex);
         }
@@ -61,13 +62,13 @@ public class TextConsole implements RMainLoopCallbacks {
     public String getLine(Rengine re) {
         try {
             int indiceLine;
-            while ((indiceLine = buffer.indexOf("\n")) < 0) {
+            while ((indiceLine = TextConsole.buffer.indexOf("\n")) < 0) {
                 Thread.sleep(100);
-                //  Testapp.log("requerendo msg buffer: " + buffer.toString());
+                System.out.println("requerendo msg buffer: " + buffer.toString());
             }
 
-            String line = buffer.substring(0, indiceLine + 1);
-            buffer.delete(0, indiceLine + 1);
+            String line = TextConsole.buffer.substring(0, indiceLine + 1);
+            TextConsole.buffer.delete(0, indiceLine + 1);
             System.out.println("received message: \"" + line + "\"");
             return line;
         } catch (Exception e) {
@@ -82,12 +83,12 @@ public class TextConsole implements RMainLoopCallbacks {
 
     public void printLine(String text) {
         System.out.println("send message: " + text);
-        jRISends.sendText(text);
+        TextConsole.jRISends.sendText(text);
     }
 
     @Override
     public void rFlushConsole(Rengine rngn) {
-        jRISends.sendAlert("flush");
+        TextConsole.jRISends.sendAlert("flush");
     }
 
     @Override
@@ -97,7 +98,7 @@ public class TextConsole implements RMainLoopCallbacks {
 
     @Override
     public void rLoadHistory(Rengine rngn, String string) {
-        jRISends.sendAlert("rLoadHistory: " + string);
+        TextConsole.jRISends.sendAlert("rLoadHistory: " + string);
     }
 
 }

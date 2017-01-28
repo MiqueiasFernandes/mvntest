@@ -7,6 +7,7 @@ package miqueias.com.br.testemavenserver.engine;
 
 import java.util.HashSet;
 import javax.websocket.Session;
+import miqueias.com.br.testemavenserver.jri.JRIconnector;
 
 /**
  *
@@ -15,7 +16,8 @@ import javax.websocket.Session;
 public class ConexoesSingleton {
 
     private static HashSet<Session> livers, prompts, alerts, files;
-    private static Protocol protocol;
+    private final static Protocol protocol = new Protocol();
+    private static final JRIconnector jRIconnector = new JRIconnector();
 
     private ConexoesSingleton() {
         System.out.println("O gerenciador de conexoes sera inicializado...");
@@ -23,7 +25,6 @@ public class ConexoesSingleton {
         prompts = new HashSet<>();
         alerts = new HashSet<>();
         files = new HashSet<>();
-        protocol = new Protocol();
         System.out.println("inicializou gerenciador de conexoes...");
     }
 
@@ -43,21 +44,10 @@ public class ConexoesSingleton {
         return prompts;
     }
 
-//    public Session[] getSessionslivers() {
-//        return livers.toArray(new Session[]{});
-//    }
-//
-//    public Session[] getSessionsprompts() {
-//        return prompts.toArray(new Session[]{});
-//    }
-//
-//    public Session[] getSessionsalerts() {
-//        return alerts.toArray(new Session[]{});
-//    }
-//
-//    public Session[] getSessionsfiles() {
-//        return files.toArray(new Session[]{});
-//    }
+    public JRIconnector getjRIconnector() {
+        return jRIconnector;
+    }
+
     public Protocol getProtocol() {
         return protocol;
     }

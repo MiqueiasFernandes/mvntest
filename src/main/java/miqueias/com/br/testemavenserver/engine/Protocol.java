@@ -7,9 +7,9 @@ package miqueias.com.br.testemavenserver.engine;
 
 import java.util.Set;
 import javax.websocket.Session;
-import miqueias.com.br.testemavenserver.WebsocketsServer;
 import static miqueias.com.br.testemavenserver.WebsocketsServer.time_to_close_on_disconnect;
 import miqueias.com.br.testemavenserver.engine.chain.AbstractMessageHandler;
+import miqueias.com.br.testemavenserver.engine.chain.LiveRHandler;
 import miqueias.com.br.testemavenserver.engine.strategy.AbstractWebSocketsStrategy;
 import miqueias.com.br.testemavenserver.enumns.ERRORS;
 import miqueias.com.br.testemavenserver.jri.IJRISends;
@@ -21,12 +21,10 @@ import miqueias.com.br.testemavenserver.jri.JRIconnector;
  */
 public class Protocol implements IJRISends {
 
-    private final JRIconnector jRIconnector;
-    private final AbstractMessageHandler handler;
+    private static AbstractMessageHandler handler;
 
     public Protocol() {
         System.out.println("O gerenciador de protocolo sera iniciado...");
-        this.jRIconnector = new JRIconnector();
         handler = new AbstractMessageHandler() {
             @Override
             public boolean accept(Session session, String message) {
@@ -38,6 +36,8 @@ public class Protocol implements IJRISends {
                 System.out.println("Nova mensagem recebida: " + message);
             }
         };
+
+        handler.setNext(new LiveRHandler());
 
         System.out.println("iniciou gerenciador de protocolo...");
     }
@@ -83,22 +83,23 @@ public class Protocol implements IJRISends {
     }
 
     public JRIconnector getjRIconnector() {
-        return jRIconnector;
+        return ConexoesSingleton.getInstance().getjRIconnector();
     }
 
     public void startJRI() {
         if (getConSing().getLivers().size() > 0
                 && getConSing().getPrompts().size() > 0
                 && getConSing().getAlerts().size() > 0
-                && jRIconnector.getRengine() == null) {
+                && getjRIconnector().getRengine() == null
+                && !getjRIconnector().isInicializando()) {
             System.out.println("starting JRI engine...");
-            jRIconnector.start(this);
+            getjRIconnector().start(this);
             System.out.println("JRI engine was started...");
         }
     }
 
     public void endJRI() {
-        if (jRIconnector.getRengine() != null) {
+        if (getjRIconnector().getRengine() != null) {
             if (getConSing().getLivers().size() < 1) {
                 new Thread(() -> {
                     int i = 0;
@@ -114,7 +115,7 @@ public class Protocol implements IJRISends {
                         }
                     }
                     if (getConSing().getLivers().size() < 1) {
-                        jRIconnector.getRengine().end();
+                        getjRIconnector().getRengine().end();
                         System.err.println("fechando conexão, timeout por não conectado em " + time_to_close_on_disconnect + " seg.");
                         System.exit(ERRORS.ERROR_TIMEOUT_CONEXION_NO_OPEN_ON_CLOSE.ordinal());
                     }

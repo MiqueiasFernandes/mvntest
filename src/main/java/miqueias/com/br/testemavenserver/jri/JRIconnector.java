@@ -13,11 +13,12 @@ import org.rosuda.JRI.Rengine;
  */
 public class JRIconnector {
 
-    private Rengine rengine = null;
-    private TextConsole textConsole = null;
+    private static Rengine rengine = null;
+    private static TextConsole textConsole = null;
+    private static boolean inicializando = false;
 
     public void start(IJRISends iJRISends) {
-
+        inicializando = true;
         textConsole = new TextConsole(iJRISends);
 
         if (!Rengine.versionCheck()) {
@@ -40,6 +41,7 @@ public class JRIconnector {
             rengine.end();
             System.out.println("end");
         }
+        inicializando = false;
     }
 
     public void setReceivedMessage(String message) {
@@ -60,6 +62,10 @@ public class JRIconnector {
         } else {
             System.err.println("Messagem não tratada: " + message);
         }
+    }
+
+    public boolean isInicializando() {
+        return inicializando;
     }
 
 }
